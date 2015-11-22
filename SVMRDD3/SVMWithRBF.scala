@@ -10,15 +10,13 @@ import scala.util.Random
  */
 class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, var tolerance: Double, var gamma: Double, var test: RDD[LabeledPoint]) extends Serializable {
 
-  val N: Int = input.count().toInt // 样本数总数
-  val trainNum: Int = N // 训练数据数目
+  val trainNum: Int = input.count().toInt // 训练数据数目
   val d: Int = input.map(_.features.size).first() // 样本维数
-//  var target = new Array[Int](N) // 训练与测试样本的目标值
   var b: Double = 0.0 // 阀值
   var errorCache = new Array[Double](trainNum) // 存放non-bound样本误差,拉格朗日乘子既非0也非C(non-bound，注意non-bound是针对Ci≤≤α0这一约束条件而言的)
 
-  println("维数：-----------------： " + d)
-  println("训练数据的个数为：" + N)
+  println("样本维数： " + d)
+  println("训练数据的个数为：" + trainNum)
 
   val data = input.map(lp => (lp.label, lp.features))
   data.cache()
@@ -40,19 +38,6 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
     weights.dot(weights)
   }.collect()
 
-
-//  /**
-//   * 计算点积函数
-//   * @param i1 第i1个数据点
-//   * @param i2 第i2个数据点
-//   * @return
-//   */
-//  def dotProductFunc(i1: Int, i2: Int): Double = {
-//    val dot = dataMatrix(i1).dot(dataMatrix(i2))
-//    dot
-//  }
-
-
   /**
    * 径向基核函数RBF
    * @param i1 第i1个数据点
@@ -60,7 +45,7 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
    * @return
    */
   def kernelFunc(i1: Int, i2: Int): Double = {
-    var s = trainMatrix(i1).dot(trainMatrix(i2))
+    var s = trainMatrix(i1).dot(trainMatrix(i2)) // 只保留该语句，是线性核
 //    s *= -2
 //    s += precomputedSelfDotProduct(i1) + precomputedSelfDotProduct(i2)
 //    math.exp(-s * gamma)
@@ -75,7 +60,7 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
    * @return
    */
   def kernelFunc(i1: Int, point: DoubleMatrix): Double = {
-    var s = trainMatrix(i1).dot(point)
+    var s = trainMatrix(i1).dot(point) // 只保留该语句，是线性核
 //    s *= -2
 //    s += precomputedSelfDotProduct(i1) + point.dot(point)
 //    math.exp(-s * gamma)
@@ -340,7 +325,6 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
   def errorRate(data: RDD[(Double, DoubleMatrix)]): Double = {
     data.cache()
     val n = data.count().toDouble
-//    var ac = 0
     println("----------------- 测试结果 -----------------")
     println("测试数据的个数为： " + n)
     val accuracy = data.map { case (label, features) =>
@@ -357,7 +341,7 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
   }
 
   /**
-   * 预测结果
+   * 官方使用的预测值
    */
     def auROC(data: RDD[(Double, DoubleMatrix)]) = {
       data.cache()
@@ -411,30 +395,15 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
     }
     println("================ supportVectors 个数: ================ " + supportVectors)
 
-    val testSample = data.map { case (label, features) => // 列存储方式的训练样本矩阵(column-major)
-      val feature = new DoubleMatrix(features.size, 1, features.toArray:_*)
-      (label, feature)
-    }
-
-    val test2 = test.map { lp =>
+    val testData = test.map { lp =>
       val feature = new DoubleMatrix(lp.features.size, 1, lp.features.toArray:_*)
       (lp.label, feature)
     }
 
-
-    println("测试：")
-    errorRate(test2)
-//    println("训练样本：")
-//    errorRate(testSample)
-    auROC(test2)
+    errorRate(testData) // 求正确率
+    auROC(testData) // 求 ROC
 
     new SVMModel()
   }
 
-
-/*
-  def run(): SVMModel = {
-    new SVMModel()
-  }
- */
 }

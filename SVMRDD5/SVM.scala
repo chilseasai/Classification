@@ -32,17 +32,17 @@ object SVM {
     //    val input = "D:\\sample_libsvm_data2.txt"
 
     // 实验室电脑的文件加载路径
-    //    val input = "hdfs://tseg0:9010/user/tseg/saijinchen/sample_libsvm_data.txt"
-    val input = "D:\\spark-1.4.1-bin-hadoop2.6\\data\\mllib\\sample_libsvm_data2.txt"
+//    val input = "hdfs://tseg0:9010/user/tseg/saijinchen/SVM/heartdata2"
+//    val input = "hdfs://tseg0:9010/user/tseg/saijinchen/SVM/sample_libsvm_data2.txt"
+    val input = "E:\\LearningScala\\testData\\sample_libsvm_data2.txt"
+//    val input = "E:\\LearningScala\\testData\\heartdata2"
 
     val C: Double = 1.0 // 惩罚因子
     val eps = 1.0E-12 // 松弛变量
     val tolerance = 0.001 // 容忍度，在KKT条件中容忍范围
     val gamma = 0.5; //RBF Kernel Function的参数   g=Gamma = 1/2*Sigma.^2 (width of Rbf)
 
-    @transient
     val conf = new SparkConf().setAppName("SVM Application")
-    @transient
     val sc = new SparkContext(conf)
 
     // 自己的文件读取接口
@@ -55,16 +55,15 @@ object SVM {
     val training = splits(0).cache()
     val test = splits(1)
 
-
     val start = new Date().getTime
 
-    val model = SVM.train(training, C, eps, tolerance, gamma, test)
+    val model = SVM.train(training, C, eps, tolerance, gamma, test) // 训练出的模型
 
-    val scores = model.predict(test.map(point =>
+    val scores = model.predict(test.map(point => // 预测后的标号
       new DoubleMatrix(point.features.size, 1, point.features.toArray:_*))
     )
 
-    val labels = test.map(point => point.label)
+    val labels = test.map(point => point.label) // 已知的标签
 
     val scoreAndLabels = scores.zip(labels)
 

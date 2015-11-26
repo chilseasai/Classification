@@ -415,11 +415,11 @@ class SVMWithRBF(var input: RDD[LabeledPoint], var C: Double, var eps: Double, v
 //      val feature = new DoubleMatrix(lp.features.size, 1, lp.features.toArray:_*)
 //      (lp.label, feature)
 //    }
-
+//
 //    errorRate(testData) // 求正确率
 //    auROC(testData) // 求 ROC
-
-//    new SVMModel()
+//
+//    new SVMModel(new Array[(Double, Double, DoubleMatrix)](0), b, gamma)
 
     createModel(trainMatrix, b, gamma)
   }

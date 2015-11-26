@@ -6,6 +6,12 @@ import org.jblas.DoubleMatrix
 /**
  * Created by tseg on 2015/11/24.
  */
+/**
+ *
+ * @param supportVectorsWithAlpha (alpha, label, trainMatrix)
+ * @param b
+ * @param gamma
+ */
 class SVMModel(var supportVectorsWithAlpha: Array[(Double, Double, DoubleMatrix)], var b: Double, var gamma: Double) extends Serializable {
 
   def predictPoint(point: DoubleMatrix, supportVectorsWithAlpha: Array[(Double, Double, DoubleMatrix)], b: Double): Double = {
@@ -34,6 +40,9 @@ class SVMModel(var supportVectorsWithAlpha: Array[(Double, Double, DoubleMatrix)
 //    predictPoint(testData, supportVectorsWithAlpha, b, sc)
 //  }
 
+  def save(sc: SparkContext, supportVectorsWithAlpha: Array[(Double, Double, DoubleMatrix)], b: Double, gamma: Double) = {
+
+  }
 }
 
 
